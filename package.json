@@ -1,0 +1,69 @@
+{
+    "name": "ts-metamodel",
+    "description": "Please enter a brief description here",
+    "version": "0.0.1",
+    "files": [
+        "bin"
+    ],
+    "type": "module",
+    "scripts": {
+        "build": "tsc -b tsconfig.json && node esbuild.mjs",
+        "watch": "concurrently -n tsc,esbuild -c blue,yellow \"tsc -b tsconfig.json --watch\" \"node esbuild.mjs --watch\"",
+        "lint": "eslint src --ext ts",
+        "langium:generate": "langium generate",
+        "langium:watch": "langium generate --watch",
+        "vscode:prepublish": "npm run build && npm run lint"
+    },
+    "dependencies": {
+        "langium": "~2.0.0",
+        "vscode-languageclient": "~8.0.2",
+        "chalk": "~5.3.0",
+        "commander": "~10.0.0"
+    },
+    "devDependencies": {
+        "@types/node": "~16.18.11",
+        "@typescript-eslint/parser": "~5.58.0",
+        "@typescript-eslint/eslint-plugin": "~5.58.0",
+        "eslint": "~8.33.0",
+        "langium-cli": "~2.0.0",
+        "typescript": "~5.0.4",
+        "@types/vscode": "~1.67.0",
+        "concurrently": "^7.6.0",
+        "esbuild": "^0.18.14"
+    },
+    "displayName": "ts-metamodel",
+    "engines": {
+        "vscode": "^1.67.0",
+        "node": ">=16.0.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [
+            {
+                "id": "ts-metamodel",
+                "aliases": [
+                    "TS Metamodel",
+                    "ts-metamodel"
+                ],
+                "extensions": [".sb"],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "ts-metamodel",
+                "scopeName": "source.ts-metamodel",
+                "path": "./syntaxes/ts-metamodel.tmLanguage.json"
+            }
+        ]
+    },
+    "activationEvents": [
+        "onLanguage:ts-metamodel"
+    ],
+    "main": "./out/extension/main.cjs",
+    "bin": {
+        "ts-metamodel-cli": "./bin/cli.js"
+    }
+}

@@ -1,0 +1,15 @@
+{
+    "projectName": "TsMetamodel",
+    "languages": [{
+        "id": "ts-metamodel",
+        "grammar": "src/language/ts-metamodel.langium",
+        "fileExtensions": [".sb"],
+        "textMate": {
+            "out": "syntaxes/ts-metamodel.tmLanguage.json"
+        },
+        "monarch": {
+            "out": "syntaxes/ts-metamodel.monarch.ts"
+        }
+    }],
+    "out": "src/language/generated"
+}
