@@ -1,6 +1,7 @@
 import type { AstNode, ValidationAcceptor, ValidationChecks } from 'langium';
-import { type TsMetamodelAstType, isPrimitiveType, isEnumerationLiteralValue, ArrayValue, Entity, Enumeration, Model, Member, AttributeMember, isPrimitiveValue, PrimitiveValue } from './generated/ast.js';
+import { type TsMetamodelAstType, isEnumerationLiteralValue, ArrayValue, Entity, Enumeration, Model, Member, AttributeMember, isAttributeType } from './generated/ast.js';
 import type { TsMetamodelServices } from './ts-metamodel-module.js';
+import { checkValueType } from './type-system.js';
 
 /**
  * Register custom validation checks.
@@ -10,7 +11,7 @@ export function registerValidationChecks(services: TsMetamodelServices) {
     const validator = services.validation.TsMetamodelValidator;
     const checks: ValidationChecks<TsMetamodelAstType> = {
         Member: validator.checkCardinality,
-        AttributeMember: validator.checkAttributeValue,
+        AttributeMember: validator.checkAttributeTypeValue,
         ArrayValue: validator.checkArrayProperties,
         Entity: validator.checkPropertyNameUniqueness,
         Model: validator.checkEntityNameUniqueness,
@@ -24,51 +25,72 @@ export function registerValidationChecks(services: TsMetamodelServices) {
  */
 export class TsMetamodelValidator {
 
+    /**
+     * Check if the property names of an entity are unique.
+     * @param entity the entity to check the properties of
+     * @param accept the validation acceptor
+     */
     checkPropertyNameUniqueness(entity: Entity, accept: ValidationAcceptor): void {
         this.checkUniqueness(entity.members, 'name', 'property', accept)
     }
 
+    /**
+     * Check if the entity names of a model is unique.
+     * @param model the model to check the entities of
+     * @param accept the validation acceptor
+     */
     checkEntityNameUniqueness(model: Model, accept: ValidationAcceptor): void {
         this.checkUniqueness(model.namespaces, 'name', 'entity', accept)
     }
 
+    /**
+     * Check if the enumeration literal names are unique.
+     * @param enumeration the enumeration to check the literals of
+     * @param accept the validation acceptor
+     */
     checkLiteralNameUniqueness(enumeration: Enumeration, accept: ValidationAcceptor): void {
         this.checkUniqueness(enumeration.literals, 'name', 'enumeration literal', accept)
     }
 
+    
+    /**
+     * Check if the cardinality of a member is valid.
+     * A cardinality is valid if the lower bound is less than or equal to the upper bound. 
+     * If the lower (upper) bound is not specified, it is assumed to be 0 (Number.MAX_VALUE).
+     * If the lower bound is 0 and the upper bound is 0, the cardinality is invalid.
+     * @param member the member to check the cardinality of
+     * @param accept the validation acceptor
+     */
     checkCardinality(member: Member, accept: ValidationAcceptor): void {
-        if ((member.lowerBound || Number.MIN_VALUE) > (member.upperBound || Number.MAX_VALUE)) {
+        if ((member.lowerBound || 0) > (member.upperBound || Number.MAX_VALUE)) {
             accept('error', 'The minimum bound of a cardinality cannot be greater than the maximum bound.', { node: member, range: member.$cstNode?.range });
         } else if(member.lowerBound === 0 && member.upperBound === 0) {
             accept('error', "Cardinality 0 is meaningless", { node: member, range: member.$cstNode?.range });
         }
     }
 
-    checkAttributeValue(member: AttributeMember, accept: ValidationAcceptor): void {
+    /**
+     * Check if the value of an attribute is of the correct type, ie the specified type for the attribute.
+     * @param member the attribute member to check the value of
+     * @param accept the validation acceptor
+     */
+    checkAttributeTypeValue(member: AttributeMember, accept: ValidationAcceptor): void {
         const type = member.type;
-        if(isPrimitiveType(type) && member.value) {
-            const value = member.value;
-            if(isPrimitiveValue(value)) {
-               this.checkValueType(type.name, value!, accept);
-            } else {
-                value.values.forEach((simpleValue) => this.checkValueType(type.name, simpleValue, accept))
+        if(isAttributeType(type) && member.value) {
+            if(!checkValueType(type, member.value)) {
+                accept('error', `Value must be of type '${type.$type.slice(0, -'Type'.length).toLowerCase()}', found '${member.value.$type.slice(0, -'Value'.length).toLowerCase()}'.`, { node: member.value });
             }
         }
     }
 
-    private checkValueType(expectedType: string, value: PrimitiveValue, accept: ValidationAcceptor) {
-        let foundType: string = '';
-            if(isPrimitiveValue(value) && !isEnumerationLiteralValue(value)) {
-                foundType = value.$type.slice(0, -'Value'.length).toLowerCase()
-            } else if(isEnumerationLiteralValue(value)) {
-                foundType = value.literalRef.$refText
-            }
-
-            if(foundType !== expectedType) {
-                accept('error', `Value must be of type '${expectedType}', found '${foundType}'.`, { node: value });
-            }
-    }
-
+    /**
+     * Check if an array value is valid.
+     * An array is valid if the size is between the lower and upper bound (inclusive) specified in the cardinality of the attribute.
+     * If the lower (upper) bound is not specified, it is assumed to be 0 (Number.MAX_VALUE).
+     * If the array is unique, it is checked if all elements are unique.
+     * @param array the array to check the properties of
+     * @param accept the validation acceptor
+     */
     checkArrayProperties(array: ArrayValue, accept: ValidationAcceptor): void {
         const container = array.$container
         const unique = container.unique
@@ -100,6 +122,13 @@ export class TsMetamodelValidator {
         }
     }
 
+    /**
+     * Check if all the value of an array are unique according to a given property.
+     * @param array the array to check the values of
+     * @param propToCheck the property used to check the uniqueness of the values
+     * @param elementNameString the name of the elements in the array, used only for the logs
+     * @param accept the validation acceptor
+     */
     checkUniqueness<T extends AstNode, U extends keyof T>(array: T[], propToCheck: U, elementNameString: string, accept: ValidationAcceptor): void {
         const elements: any[] = []
         for(const element of array) {

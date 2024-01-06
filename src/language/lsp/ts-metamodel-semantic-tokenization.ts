@@ -1,5 +1,5 @@
 import { AbstractSemanticTokenProvider, AstNode, SemanticTokenAcceptor } from "langium";
-import { isClassifier, isEntity, isEnumeration, isEnumerationType, isMember, isPrimitiveType, isPrimitiveValue, isReferenceType } from "../generated/ast.js";
+import { isAttributeType, isClassifier, isEntity, isEnumeration, isEnumerationType, isMember, isPrimitiveValue, isReferenceType } from "../generated/ast.js";
 import { SemanticTokenTypes } from "vscode-languageserver";
 
 export class TsMetamodelSemanticTokenization extends AbstractSemanticTokenProvider {
@@ -15,10 +15,10 @@ export class TsMetamodelSemanticTokenization extends AbstractSemanticTokenProvid
             }
         } else if(isMember(node)) {
             acceptor({ node, property: "name", type: SemanticTokenTypes.property })
-        } else if(isPrimitiveType(node)) {
-            acceptor({ node, property: "name", type: SemanticTokenTypes.type })
         }  else if(isEnumerationType(node)) {
             acceptor({ node, property: "enumerationRef", type: SemanticTokenTypes.type })
+        } else if(isAttributeType(node)) {
+            acceptor({ node, property: "name", type: SemanticTokenTypes.type })
         } else if(isReferenceType(node)) {
             acceptor({ node, property: "ref", type: SemanticTokenTypes.type })
         } else if(isPrimitiveValue(node)) {

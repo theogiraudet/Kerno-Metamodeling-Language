@@ -4,6 +4,7 @@ import { TsMetamodelGeneratedModule, TsMetamodelGeneratedSharedModule } from './
 import { TsMetamodelValidator, registerValidationChecks } from './ts-metamodel-validator.js';
 import { TsMetamodelSemanticTokenization } from './lsp/ts-metamodel-semantic-tokenization.js';
 import { TsMetamodelScopeProvider } from './lsp/ts-metamodel-scope-provider.js';
+import { TsMetamodelCompletionProvider } from './lsp/ts-metamodel-completion-provider.js';
 
 /**
  * Declaration of custom services - add your own service classes here.
@@ -28,6 +29,7 @@ export type TsMetamodelServices = LangiumServices & TsMetamodelAddedServices
 export const TsMetamodelModule: Module<TsMetamodelServices, PartialLangiumServices & TsMetamodelAddedServices> = {
     lsp: {
         SemanticTokenProvider: (services) => new TsMetamodelSemanticTokenization(services),
+        CompletionProvider: (services) => new TsMetamodelCompletionProvider(services)
     },
     references: {
         ScopeProvider: (services) => new TsMetamodelScopeProvider(services)

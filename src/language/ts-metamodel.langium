@@ -32,14 +32,11 @@ fragment Cardinality:
     '[' (lowerBound=INT (bound?='..' upperBound=INT?)? | bound?='..' lowerBound=INT)  ']';
 
 AttributeType returns AttributeType: 
-    PrimitiveType | EnumerationType;
+    {IntegerType} 'integer' | {FloatType} 'float' | {StringType} 'string' | {BooleanType} 'boolean' | EnumerationType;
 
 EnumerationType returns EnumerationType: 
     enumerationRef=[Enumeration:ID];
       
-PrimitiveType returns PrimitiveType:
-    name=('integer' | 'float' | 'string' | 'boolean');
-
 ComplexValue returns ComplexValue:
     ArrayValue;
 

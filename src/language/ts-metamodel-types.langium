@@ -6,7 +6,7 @@ interface Model {
     namespaces: Classifier[]
 }
 
-type NamedElement = Classifier | PrimitiveType | EnumerationLiteral
+type NamedElement = Classifier | EnumerationLiteral
 type Classifier = Entity | Enumeration
 
 interface Entity {
@@ -53,15 +53,16 @@ interface ReferenceMember {
 }
 
 type Type = AttributeType | ReferenceType
-type AttributeType = PrimitiveType | EnumerationType
+type AttributeType = IntegerType | FloatType | StringType | BooleanType | EnumerationType
 
 interface ReferenceType {
     ref: @Entity
 }
 
-interface PrimitiveType {
-    name: 'integer' | 'float' | 'string' | 'boolean'
-}
+interface IntegerType {}
+interface FloatType {}
+interface StringType {}
+interface BooleanType {}
 
 interface EnumerationType {
     enumerationRef: @Enumeration

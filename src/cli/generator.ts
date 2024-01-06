@@ -1,4 +1,4 @@
-import { isPrimitiveType, type Entity, type Model, type Member, type Type, isReferenceType } from '../language/generated/ast.js';
+import { type Entity, type Model, type Member, type Type, isReferenceType, isAttributeType } from '../language/generated/ast.js';
 import * as fs from 'node:fs';
 import { CompositeGeneratorNode, NL, toString } from 'langium';
 import * as path from 'node:path';
@@ -47,8 +47,8 @@ function generateCompositeType(prop: Member, generatorNode: CompositeGeneratorNo
 }
 
 function generateType(type: Type, generatorNode: CompositeGeneratorNode) {
-    if(isPrimitiveType(type)) {
-        generatorNode.append(type.name)
+    if(isAttributeType(type)) {
+        generatorNode.append(type.$type)
     } else if(isReferenceType(type)) {
         generatorNode.append(type.ref.$refText)
     }
