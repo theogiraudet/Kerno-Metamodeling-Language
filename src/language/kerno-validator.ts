@@ -1,15 +1,15 @@
 import type { AstNode, ValidationAcceptor, ValidationChecks } from 'langium';
-import { type TsMetamodelAstType, isEnumerationLiteralValue, ArrayValue, Entity, Enumeration, Model, Member, AttributeMember, isAttributeType } from './generated/ast.js';
-import type { TsMetamodelServices } from './ts-metamodel-module.js';
-import { checkValueType } from './type-system.js';
+import { type KernoAstType, isEnumerationLiteralValue, ArrayValue, Entity, Enumeration, Model, Member, AttributeMember, isAttributeType } from './generated/ast.js';
+import type { KernoServices } from './kerno-module.js';
+import { checkValueType } from './kerno-type-system.js';
 
 /**
  * Register custom validation checks.
  */
-export function registerValidationChecks(services: TsMetamodelServices) {
+export function registerValidationChecks(services: KernoServices) {
     const registry = services.validation.ValidationRegistry;
-    const validator = services.validation.TsMetamodelValidator;
-    const checks: ValidationChecks<TsMetamodelAstType> = {
+    const validator = services.validation.KernoValidator;
+    const checks: ValidationChecks<KernoAstType> = {
         Member: validator.checkCardinality,
         AttributeMember: validator.checkAttributeTypeValue,
         ArrayValue: validator.checkArrayProperties,
@@ -23,7 +23,7 @@ export function registerValidationChecks(services: TsMetamodelServices) {
 /**
  * Implementation of custom validations.
  */
-export class TsMetamodelValidator {
+export class KernoValidator {
 
     /**
      * Check if the property names of an entity are unique.

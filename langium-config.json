@@ -1,14 +1,14 @@
 {
-    "projectName": "TsMetamodel",
+    "projectName": "Kerno",
     "languages": [{
-        "id": "ts-metamodel",
-        "grammar": "src/language/ts-metamodel.langium",
-        "fileExtensions": [".sb"],
+        "id": "kerno",
+        "grammar": "src/language/kerno.langium",
+        "fileExtensions": [".ker", ".kerno"],
         "textMate": {
-            "out": "syntaxes/ts-metamodel.tmLanguage.json"
+            "out": "syntaxes/kerno.tmLanguage.json"
         },
         "monarch": {
-            "out": "syntaxes/ts-metamodel.monarch.ts"
+            "out": "syntaxes/kerno.monarch.ts"
         }
     }],
     "out": "src/language/generated"

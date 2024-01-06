@@ -37,7 +37,7 @@ function startLanguageClient(context: vscode.ExtensionContext): LanguageClient {
 
     // Options to control the language client
     const clientOptions: LanguageClientOptions = {
-        documentSelector: [{ scheme: 'file', language: 'ts-metamodel' }],
+        documentSelector: [{ scheme: 'file', language: 'kerno' }],
         synchronize: {
             // Notify the server about file changes to files contained in the workspace
             fileEvents: fileSystemWatcher
@@ -46,8 +46,8 @@ function startLanguageClient(context: vscode.ExtensionContext): LanguageClient {
 
     // Create the language client and start the client.
     const client = new LanguageClient(
-        'ts-metamodel',
-        'TS Metamodel',
+        'kerno',
+        'Kerno',
         serverOptions,
         clientOptions
     );

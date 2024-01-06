@@ -4,14 +4,14 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Build ts-metamodel",
+            "label": "Build Kerno",
             "command": "npm run langium:generate && npm run build",
             "type": "shell",
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
-            "detail": "Langium: Generate grammar and build the ts-metamodel language",
+            "detail": "Langium: Generate grammar and build the kerno language",
             "icon": {
                 "color": "terminal.ansiGreen",
                 "id": "server-process"

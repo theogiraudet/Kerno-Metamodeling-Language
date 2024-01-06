@@ -1,5 +1,5 @@
 {
-    "name": "ts-metamodel",
+    "name": "kerno",
     "description": "Please enter a brief description here",
     "version": "0.0.1",
     "files": [
@@ -31,7 +31,7 @@
         "langium-cli": "^2.1.0",
         "typescript": "~5.0.4"
     },
-    "displayName": "ts-metamodel",
+    "displayName": "Kerno",
     "engines": {
         "vscode": "^1.67.0",
         "node": ">=16.0.0"
@@ -42,30 +42,30 @@
     "contributes": {
         "languages": [
             {
-                "id": "ts-metamodel",
+                "id": "kerno",
                 "aliases": [
-                    "TS Metamodel",
-                    "ts-metamodel"
+                    "Kerno"
                 ],
                 "extensions": [
-                    ".sb"
+                    ".ker",
+                    ".kerno"
                 ],
                 "configuration": "./language-configuration.json"
             }
         ],
         "grammars": [
             {
-                "language": "ts-metamodel",
-                "scopeName": "source.ts-metamodel",
-                "path": "./syntaxes/ts-metamodel.tmLanguage.json"
+                "language": "kerno",
+                "scopeName": "source.kerno",
+                "path": "./syntaxes/kerno.tmLanguage.json"
             }
         ]
     },
     "activationEvents": [
-        "onLanguage:ts-metamodel"
+        "onLanguage:kerno"
     ],
     "main": "./out/extension/main.cjs",
     "bin": {
-        "ts-metamodel-cli": "./bin/cli.js"
+        "kerno-cli": "./bin/cli.js"
     }
 }

@@ -1,5 +1,5 @@
-grammar TsMetamodel
-import './ts-metamodel-types'
+grammar Kerno
+import './kerno.types'
 
 entry Model returns Model:
     // 'module' module=ID

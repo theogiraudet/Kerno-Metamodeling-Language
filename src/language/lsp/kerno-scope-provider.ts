@@ -1,7 +1,7 @@
 import { DefaultScopeProvider, ReferenceInfo, Scope } from "langium";
 import { isAttributeMember, isEnumerationLiteralValue, isEnumerationType } from "../generated/ast.js";
 
-export class TsMetamodelScopeProvider extends DefaultScopeProvider {
+export class KernoScopeProvider extends DefaultScopeProvider {
 
     /**
      * Customize the default scope provider in order to propose the different litterals of the enumeration type in the completion.

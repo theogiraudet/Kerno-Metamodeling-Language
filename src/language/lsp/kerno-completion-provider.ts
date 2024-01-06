@@ -1,8 +1,8 @@
 import { CompletionAcceptor, CompletionContext, DefaultCompletionProvider, GrammarAST, MaybePromise, NextFeature } from "langium";
 import { BooleanValue, isAttributeMember } from "../generated/ast.js";
-import { getValueTypeNameFromType } from "../type-system.js";
+import { getValueTypeNameFromType } from "../kerno-type-system.js";
 
-export class TsMetamodelCompletionProvider extends DefaultCompletionProvider { 
+export class KernoCompletionProvider extends DefaultCompletionProvider { 
 
     
     /** 

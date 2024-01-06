@@ -2,7 +2,7 @@ import { AbstractSemanticTokenProvider, AstNode, SemanticTokenAcceptor } from "l
 import { isAttributeType, isClassifier, isEntity, isEnumeration, isEnumerationType, isMember, isPrimitiveValue, isReferenceType } from "../generated/ast.js";
 import { SemanticTokenTypes } from "vscode-languageserver";
 
-export class TsMetamodelSemanticTokenization extends AbstractSemanticTokenProvider {
+export class KernoSemanticTokenization extends AbstractSemanticTokenProvider {
 
     protected override highlightElement(node: AstNode, acceptor: SemanticTokenAcceptor): void {
         if(isClassifier(node)) {
