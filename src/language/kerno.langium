@@ -29,7 +29,7 @@ ReferenceMember returns ReferenceMember:
     documentation=Documentation? (contains?="contains" | refers?="refers") name=ID ':' ((ordered?='ordered' & unique?='unique') type=ReferenceType  Cardinality? | type=ReferenceType);
 
 fragment Cardinality:
-    '[' (lowerBound=INT (bound?='..' upperBound=INT?)? | bound?='..' lowerBound=INT)  ']';
+    bound?='[' (lowerBound=INT ('..' upperBound=INT?)? | '..' lowerBound=INT)  ']';
 
 AttributeType returns AttributeType: 
     {IntegerType} 'integer' | {FloatType} 'float' | {StringType} 'string' | {BooleanType} 'boolean' | EnumerationType;

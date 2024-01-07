@@ -1,7 +1,7 @@
 import type { AstNode, ValidationAcceptor, ValidationChecks } from 'langium';
 import { type KernoAstType, isEnumerationLiteralValue, ArrayValue, Entity, Enumeration, Model, Member, AttributeMember, isAttributeType } from './generated/ast.js';
 import type { KernoServices } from './kerno-module.js';
-import { checkValueType } from './kerno-type-system.js';
+import { checkArrayValueTypes, checkValueType } from './kerno-type-system.js';
 
 /**
  * Register custom validation checks.
@@ -77,8 +77,18 @@ export class KernoValidator {
     checkAttributeTypeValue(member: AttributeMember, accept: ValidationAcceptor): void {
         const type = member.type;
         if(isAttributeType(type) && member.value) {
-            if(!checkValueType(type, member.value)) {
+            if(!member.bound && !checkValueType(type, member.value)) {
                 accept('error', `Value must be of type '${type.$type.slice(0, -'Type'.length).toLowerCase()}', found '${member.value.$type.slice(0, -'Value'.length).toLowerCase()}'.`, { node: member.value });
+            } else if(member.bound) {
+                const wrongTypes = checkArrayValueTypes(type, member.value)
+                if(wrongTypes === false) {
+                    accept('error', `Value must be of type 'Array of ${type.$type.slice(0, -'Type'.length).toLowerCase()}', found '${member.value.$type.slice(0, -'Value'.length).toLowerCase()}'.`, { node: member.value }); 
+                } else if(wrongTypes) {
+                    for(const wrongType of wrongTypes) {
+                        const values = (member.value as ArrayValue).values
+                        accept('error', `Value must be of type '${type.$type.slice(0, -'Type'.length).toLowerCase()}', found '${values[wrongType].$type.slice(0, -'Value'.length).toLowerCase()}'.`, { node: values[wrongType] });
+                    }
+                }
             }
         }
     }

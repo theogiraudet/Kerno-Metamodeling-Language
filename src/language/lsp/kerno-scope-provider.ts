@@ -10,7 +10,6 @@ export class KernoScopeProvider extends DefaultScopeProvider {
      */
     override getScope(context: ReferenceInfo): Scope {
         if (context.property === 'literalRef') {
-            console.log(context.container.$type)
             if(isEnumerationLiteralValue(context.container)) {
                 const literalValue = context.container;
                 if(isAttributeMember(literalValue.$container)) {
