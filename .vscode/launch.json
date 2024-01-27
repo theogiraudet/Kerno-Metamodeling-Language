@@ -10,11 +10,11 @@
             "type": "extensionHost",
             "request": "launch",
             "args": [
-                "--extensionDevelopmentPath=${workspaceFolder}"
+                "--extensionDevelopmentPath=${workspaceFolder}/packages/lsp",
             ],
             "sourceMaps": true,
             "outFiles": [
-                "${workspaceFolder}/out/**/*.js"
+                "${workspaceFolder}/packages/lsp/out/**/*.js"
             ]
         },
         {
@@ -23,12 +23,12 @@
             "port": 6009,
             "request": "attach",
             "skipFiles": [
-                "<node_internals>/**"
+                "**/<node_internals>/**"
             ],
             "sourceMaps": true,
             "outFiles": [
-                "${workspaceFolder}/out/**/*.js",
-                "${workspaceFolder}/node_modules/langium"
+                "${workspaceFolder}/packages/lsp/out/**/*.js",
+                "${workspaceFolder}/packages/lsp/node_modules/langium"
             ]
         }
     ]

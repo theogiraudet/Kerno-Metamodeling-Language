@@ -3,6 +3,7 @@ interface Documentation {
 }
 
 interface Model {
+    module: string
     namespaces: Classifier[]
 }
 

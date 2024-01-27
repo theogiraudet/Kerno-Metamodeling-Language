@@ -1,11 +1,13 @@
 import { AbstractSemanticTokenProvider, AstNode, SemanticTokenAcceptor } from "langium";
-import { isAttributeType, isClassifier, isEntity, isEnumeration, isEnumerationType, isMember, isPrimitiveValue, isReferenceType } from "../generated/ast.js";
+import { isAttributeType, isClassifier, isEntity, isEnumeration, isEnumerationType, isMember, isModel, isPrimitiveValue, isReferenceType } from "../generated/ast.js";
 import { SemanticTokenTypes } from "vscode-languageserver";
 
 export class KernoSemanticTokenization extends AbstractSemanticTokenProvider {
 
     protected override highlightElement(node: AstNode, acceptor: SemanticTokenAcceptor): void {
-        if(isClassifier(node)) {
+        if(isModel(node)) {
+            acceptor({ node, property: "module", type: SemanticTokenTypes.namespace })
+        } else if(isClassifier(node)) {
             acceptor({ node, property: "name", type: SemanticTokenTypes.type })
             if(isEntity(node)) {
                 acceptor({ node, keyword: "entity", type: SemanticTokenTypes.macro })

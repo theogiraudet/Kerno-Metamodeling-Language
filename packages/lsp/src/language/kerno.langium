@@ -2,7 +2,7 @@ grammar Kerno
 import './kerno.types'
 
 entry Model returns Model:
-    // 'module' module=ID
+    'module' module=ID
     namespaces += Classifier*;
 
 Classifier returns Classifier: Entity | Enumeration;
@@ -62,10 +62,13 @@ EnumerationLiteralValue returns EnumerationLiteralValue:
     literalRef=[EnumerationLiteral:ID];
 
 ReferenceType returns ReferenceType:
-    ref=[Entity:ID];
+    ref=[Entity:QualifiedName];
 
 Documentation returns Documentation:
     'doc' text=STRING;
+
+QualifiedName returns string:
+    ID ('.' ID)*;
 
 hidden terminal WS: /\s+/;
 terminal ID: /\^?[_a-zA-Z][\w_]*/;

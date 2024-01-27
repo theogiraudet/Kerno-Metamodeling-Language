@@ -5,6 +5,7 @@ import { KernoValidator, registerValidationChecks } from './kerno-validator.js';
 import { KernoSemanticTokenization } from './lsp/kerno-semantic-tokenization.js';
 import { KernoScopeProvider } from './lsp/kerno-scope-provider.js';
 import { KernoCompletionProvider } from './lsp/kerno-completion-provider.js';
+import { KernoScopeComputation } from './lsp/kerno-scope-computation.js';
 
 /**
  * Declaration of custom services - add your own service classes here.
@@ -32,7 +33,8 @@ export const KernoModule: Module<KernoServices, PartialLangiumServices & KernoAd
         CompletionProvider: (services) => new KernoCompletionProvider(services)
     },
     references: {
-        ScopeProvider: (services) => new KernoScopeProvider(services)
+        ScopeProvider: (services) => new KernoScopeProvider(services),
+        ScopeComputation: (services) => new KernoScopeComputation(services)
     },
     validation: {
         KernoValidator: () => new KernoValidator()

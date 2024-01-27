@@ -5,7 +5,7 @@
     "tasks": [
         {
             "label": "Build Kerno",
-            "command": "npm run langium:generate && npm run build",
+            "command": "npm run --prefix packages/lsp langium:generate && npm run --prefix packages/lsp build",
             "type": "shell",
             "group": {
                 "kind": "build",
