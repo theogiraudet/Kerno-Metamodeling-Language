@@ -2,24 +2,44 @@ interface Documentation {
     text: string
 }
 
-interface Model {
-    module: string
+interface Documentable {
+    documentation?: Documentation
+}
+
+interface Module {
+    name: string
+    imports: Import[]
     namespaces: Classifier[]
 }
 
-type NamedElement = Classifier | EnumerationLiteral
-type Classifier = Entity | Enumeration
+interface Import {
+    fromModule: @Module
+    imported: ClassifierImport[]
+}
 
-interface Entity {
+interface ClassifierImport {
+    imported: @Classifier
+    alias?: string
+}
+
+type NamedElement = Classifier | EnumerationLiteral
+type Classifier = Entity | Enumeration | Instance
+
+interface Entity extends Documentable {
     name: string
-    documentation?: Documentation
+    id: string
     members: Member[]
 }
 
-interface Enumeration {
+interface Enumeration extends Documentable {
     name: string
-    documentation?: Documentation
     literals: EnumerationLiteral[]
+}
+
+interface Instance extends Documentable {
+    name: string
+    entityRef: @Entity
+    members: InstanceMember[]
 }
 
 interface EnumerationLiteral {
@@ -28,21 +48,21 @@ interface EnumerationLiteral {
 
 type Member = AttributeMember | ReferenceMember
 
-interface AttributeMember {
+type InstanceMember = InstanceAttributeMember | InstanceObjectMember
+
+interface AttributeMember extends Documentable {
     name: string
-    documentation?: Documentation
     ordered: boolean
     unique: boolean
     lowerBound?: number
     upperBound?: number
     bound: boolean
-    type: AttributeType
+    memberType: AttributeType
     value?: Value
 }
 
-interface ReferenceMember {
+interface ReferenceMember extends Documentable {
     name: string
-    documentation?: Documentation
     contains: boolean
     refers: boolean
     ordered: boolean
@@ -50,7 +70,25 @@ interface ReferenceMember {
     lowerBound?: number
     upperBound?: number
     bound: boolean
-    type: ReferenceType
+    memberType: ReferenceType
+    value?: Value
+}
+
+interface InstanceAttributeMember extends Documentable {
+    value?: Value
+    memberRef: @AttributeMember
+}
+
+type InstanceObjectMember = InstanceReferenceMember | InstanceContainsMember
+
+interface InstanceReferenceMember extends Documentable {
+    value?: ReferenceValue
+    memberRef: @ReferenceMember
+}
+
+interface InstanceContainsMember extends Documentable {
+    value?: ContainsValue
+    memberRef: @ReferenceMember
 }
 
 type Type = AttributeType | ReferenceType
@@ -96,4 +134,15 @@ type ComplexValue = ArrayValue
 
 interface ArrayValue {
     values: PrimitiveValue[]
+}
+
+type ObjectValue = ReferenceValue | ContainsValue
+
+interface ReferenceValue {
+    value: @Instance
+}
+
+interface ContainsValue {
+    memberRef: @Entity
+    values: InstanceMember[]
 }

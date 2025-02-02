@@ -1,19 +1,27 @@
-import { AbstractSemanticTokenProvider, AstNode, SemanticTokenAcceptor } from "langium";
-import { isAttributeType, isClassifier, isEntity, isEnumeration, isEnumerationType, isMember, isModel, isPrimitiveValue, isReferenceType } from "../generated/ast.js";
+import { AstNode } from "langium";
+import { isAttributeType, isClassifier, isClassifierImport, isEntity, isEnumeration, isEnumerationType, isImport, isInstance, isMember, isModule, isPrimitiveValue, isReferenceType } from "../generated/ast.js";
 import { SemanticTokenTypes } from "vscode-languageserver";
+import { AbstractSemanticTokenProvider, SemanticTokenAcceptor } from "langium/lsp";
 
 export class KernoSemanticTokenization extends AbstractSemanticTokenProvider {
 
     protected override highlightElement(node: AstNode, acceptor: SemanticTokenAcceptor): void {
-        if(isModel(node)) {
-            acceptor({ node, property: "module", type: SemanticTokenTypes.namespace })
+        if(isModule(node)) {
+            acceptor({ node, property: "name", type: SemanticTokenTypes.namespace })
+        } else if(isImport(node)) {
+            acceptor({ node, property: "fromModule", type: SemanticTokenTypes.namespace })
+        } else if(isClassifierImport(node)) {
+            acceptor({ node, property: "imported", type: SemanticTokenTypes.type })
         } else if(isClassifier(node)) {
             acceptor({ node, property: "name", type: SemanticTokenTypes.type })
             if(isEntity(node)) {
                 acceptor({ node, keyword: "entity", type: SemanticTokenTypes.macro })
+                acceptor({ node, property: "id", type: SemanticTokenTypes.regexp })
             } else if(isEnumeration(node)) {
                 acceptor({ node, keyword: "enumeration", type: SemanticTokenTypes.macro })
                 acceptor({ node, property: "literals", type: SemanticTokenTypes.enumMember })
+            } else if(isInstance(node) && node.entityRef.ref?.id) {
+                acceptor({ node, property: "entityRef", type: SemanticTokenTypes.regexp })
             }
         } else if(isMember(node)) {
             acceptor({ node, property: "name", type: SemanticTokenTypes.property })

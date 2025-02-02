@@ -1,5 +1,5 @@
-import { CompositeGeneratorNode, NL } from "langium";
-import { Model, Enumeration, EnumerationLiteral, ArrayValue, AttributeMember, BooleanType, BooleanValue, Documentation, EnumerationLiteralValue, EnumerationType, FloatValue, FloatType, IntegerValue, IntegerType, ReferenceMember, ReferenceType, StringType, StringValue, Entity } from "../language/generated/ast.js";
+import { CompositeGeneratorNode, NL } from "langium/generate";
+import { Module, Enumeration, EnumerationLiteral, ArrayValue, AttributeMember, BooleanType, BooleanValue, Documentation, EnumerationLiteralValue, EnumerationType, FloatValue, FloatType, IntegerValue, IntegerType, ReferenceMember, ReferenceType, StringType, StringValue, Entity } from "../language/generated/ast.js";
 import { Visitable, Visitor } from "./visitor-pattern.js";
 
 export class TsGenerator implements Visitor {
@@ -16,7 +16,7 @@ export class TsGenerator implements Visitor {
         this.generatorNode.append("type", "Model", "{", NL)
         throw new Error("Method not implemented.");
     }
-    visitModel(node: Model): void {
+    visitModule(node: Module): void {
         throw new Error("Method not implemented.");
     }
     visitEnumeration(node: Enumeration): void {

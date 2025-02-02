@@ -1,10 +1,10 @@
-import { CompletionAcceptor, CompletionContext, DefaultCompletionProvider, GrammarAST, MaybePromise, NextFeature } from "langium";
+import { GrammarAST, MaybePromise } from "langium";
 import { BooleanValue, isAttributeMember } from "../generated/ast.js";
 import { getValueTypeNameFromType } from "../kerno-type-system.js";
+import { CompletionAcceptor, CompletionContext, DefaultCompletionProvider, NextFeature } from "langium/lsp";
 
 export class KernoCompletionProvider extends DefaultCompletionProvider { 
 
-    
     /** 
      * Customize the default completions for values.
      * If the type of the attribute is boolean, only the keywords true and false are suggested, as specified in the grammar.
@@ -16,7 +16,7 @@ export class KernoCompletionProvider extends DefaultCompletionProvider {
      */
     override completionFor(context: CompletionContext, next: NextFeature, acceptor: CompletionAcceptor): MaybePromise<void> {
         if(isAttributeMember(context.node) && context.features[0]?.type?.endsWith('Value')) {
-            const valueTypeName = getValueTypeNameFromType(context.node.type);
+            const valueTypeName = getValueTypeNameFromType(context.node.memberType);
             if(valueTypeName === BooleanValue && GrammarAST.isKeyword(next.feature)) {
                 return this.completionForKeyword(context, next.feature, acceptor);
             } else if (GrammarAST.isCrossReference(next.feature) && context.node) {

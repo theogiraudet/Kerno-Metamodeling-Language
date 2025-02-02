@@ -1,0 +1,12 @@
+module item.abstract.component
+
+import { Item } from item.abstract
+
+entity Component(component) {
+    prop id: string
+}
+
+enumeration ComponentType {
+    Item,
+    Block
+}

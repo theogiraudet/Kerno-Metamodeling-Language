@@ -1,3 +1,3 @@
 #!/usr/bin/env node
 
-import '../out/cli/main';
+import '../lib/cli/main';

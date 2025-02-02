@@ -1,7 +1,16 @@
-import type { AstNode, ValidationAcceptor, ValidationChecks } from 'langium';
-import { type KernoAstType, isEnumerationLiteralValue, ArrayValue, Entity, Enumeration, Model, Member, AttributeMember, isAttributeType } from './generated/ast.js';
+import { AstUtils, type AstNode, type DiagnosticData, type ValidationAcceptor, type ValidationChecks } from 'langium';
+import { type KernoAstType, isEnumerationLiteralValue, ArrayValue, Entity, Enumeration, Module, Member, AttributeMember, isAttributeType, isInstanceAttributeMember, Instance, isBooleanType, isEnumerationType, PrimitiveValue, ComplexValue, ContainsValue, ReferenceValue, isMember, isInstanceMember, Value, InstanceAttributeMember } from './generated/ast.js';
 import type { KernoServices } from './kerno-module.js';
 import { checkArrayValueTypes, checkValueType } from './kerno-type-system.js';
+
+
+
+export const MissingMembersError = "missing-members";
+export interface MissingMembersErrorData extends DiagnosticData {
+    missingMembers: string[];
+    instance: string;
+    code: typeof MissingMembersError;
+}
 
 /**
  * Register custom validation checks.
@@ -14,8 +23,9 @@ export function registerValidationChecks(services: KernoServices) {
         AttributeMember: validator.checkAttributeTypeValue,
         ArrayValue: validator.checkArrayProperties,
         Entity: validator.checkPropertyNameUniqueness,
-        Model: validator.checkEntityNameUniqueness,
+        Module: validator.checkEntityNameUniqueness,
         Enumeration: validator.checkLiteralNameUniqueness,
+        Instance: validator.checkInstanceMembers
     };
     registry.register(checks, validator);
 }
@@ -39,8 +49,8 @@ export class KernoValidator {
      * @param model the model to check the entities of
      * @param accept the validation acceptor
      */
-    checkEntityNameUniqueness(model: Model, accept: ValidationAcceptor): void {
-        this.checkUniqueness(model.namespaces, 'name', 'entity', accept)
+    checkEntityNameUniqueness(module: Module, accept: ValidationAcceptor): void {
+        this.checkUniqueness(module.namespaces, 'name', 'entity', accept)
     }
 
     /**
@@ -66,6 +76,10 @@ export class KernoValidator {
             accept('error', 'The minimum bound of a cardinality cannot be greater than the maximum bound.', { node: member, range: member.$cstNode?.range });
         } else if(member.lowerBound === 0 && member.upperBound === 0) {
             accept('error', "Cardinality 0 is meaningless", { node: member, range: member.$cstNode?.range });
+        } else if(isBooleanType(member.memberType) && member.unique && member.upperBound && member.upperBound > 2) {
+            accept('error', "Boolean array cannot be unique and have an upper bound greater than 2", { node: member, range: member.$cstNode?.range });
+        } else if(isEnumerationType(member.memberType) && member.unique && member.upperBound && member.upperBound > member.memberType.enumerationRef.ref!.literals.length) {
+            accept('error', "Enumeration literal array cannot be unique and have an upper bound greater than the number of literals in the enumeration", { node: member, range: member.$cstNode?.range });
         }
     }
 
@@ -75,17 +89,30 @@ export class KernoValidator {
      * @param accept the validation acceptor
      */
     checkAttributeTypeValue(member: AttributeMember, accept: ValidationAcceptor): void {
-        const type = member.type;
-        if(isAttributeType(type) && member.value) {
-            if(!member.bound && !checkValueType(type, member.value)) {
-                accept('error', `Value must be of type '${type.$type.slice(0, -'Type'.length).toLowerCase()}', found '${member.value.$type.slice(0, -'Value'.length).toLowerCase()}'.`, { node: member.value });
+        if(member.value) {
+            this.checkType(member.value, member, accept)
+        }
+    }
+
+    checkInstanceValue(member: InstanceAttributeMember, accept: ValidationAcceptor): void {
+        const instanceMember = AstUtils.getContainerOfType(value, isInstanceMember)
+        if(member.value) {
+            this.checkType(member.value, member, accept)
+        }
+    }
+
+    checkType(value: Value, member: Member, accept: ValidationAcceptor): void {
+        const type = member.memberType;
+        if(isAttributeType(type)) {
+            if(!member.bound && !checkValueType(type, value)) {
+                accept('error', `Value must be of type '${type.$type.slice(0, -'Type'.length).toLowerCase()}', found '${value.$type.slice(0, -'Value'.length).toLowerCase()}'.`, { node: value });
             } else if(member.bound) {
-                const wrongTypes = checkArrayValueTypes(type, member.value)
+                const wrongTypes = checkArrayValueTypes(type, value)
                 if(wrongTypes === false) {
-                    accept('error', `Value must be of type 'Array of ${type.$type.slice(0, -'Type'.length).toLowerCase()}', found '${member.value.$type.slice(0, -'Value'.length).toLowerCase()}'.`, { node: member.value }); 
+                    accept('error', `Value must be of type 'Array of ${type.$type.slice(0, -'Type'.length).toLowerCase()}', found '${value.$type.slice(0, -'Value'.length).toLowerCase()}'.`, { node: value }); 
                 } else if(wrongTypes) {
                     for(const wrongType of wrongTypes) {
-                        const values = (member.value as ArrayValue).values
+                        const values = (value as ArrayValue).values
                         accept('error', `Value must be of type '${type.$type.slice(0, -'Type'.length).toLowerCase()}', found '${values[wrongType].$type.slice(0, -'Value'.length).toLowerCase()}'.`, { node: values[wrongType] });
                     }
                 }
@@ -102,7 +129,10 @@ export class KernoValidator {
      * @param accept the validation acceptor
      */
     checkArrayProperties(array: ArrayValue, accept: ValidationAcceptor): void {
-        const container = array.$container
+        let container = array.$container
+        if(isInstanceAttributeMember(container)) {
+            container = container.memberRef.ref!
+        }
         const unique = container.unique
         const min = container.lowerBound || (!container.bound ? container.upperBound! : 0)
         const max = container.upperBound || (!container.bound ? container.lowerBound! : Number.MAX_VALUE)
@@ -147,6 +177,34 @@ export class KernoValidator {
             }
             elements.push(element[propToCheck])
         }
+    }
+
+    /**
+     * Check if an instance has all the properties of its entity.
+     * @param instance the instance to check the properties of
+     * @param accept the validation acceptor
+     */
+    checkInstanceMembers(instance: Instance, accept: ValidationAcceptor): void {
+        const actualMembers = instance.members.map(member => member.memberRef.ref!)
+        const missingMembers = instance.entityRef.ref?.members
+            .filter(member => !actualMembers.includes(member))
+            .map(member => member.name) || []
+        if(missingMembers.length > 0) {
+            accept('error', `${instance.entityRef.ref?.name} '${instance.name}' is missing the following properties: ${missingMembers.map(mem => mem).join(', ')}.`, { node: instance, property: 'name', code: MissingMembersError, data: { code: MissingMembersError, missingMembers, instance: instance.name } });
+        }
+    }
+
+
+    private getPropertyDefinition(value: Value): Member {
+        const container = AstUtils.getContainerOfType(value, isMember)
+        if(container) {
+            return container
+        }
+        const instanceMember = AstUtils.getContainerOfType(value, isInstanceMember)
+        if(instanceMember) {
+            return instanceMember.memberRef.ref!
+        }
+        throw new Error("Value is not a property definition")
     }
 
 }

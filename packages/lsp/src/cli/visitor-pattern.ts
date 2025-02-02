@@ -1,8 +1,8 @@
 import { AstNode } from "langium";
-import { ArrayValue, AttributeMember, BooleanType, BooleanValue, Documentation, Entity, Enumeration, EnumerationLiteral, EnumerationLiteralValue, EnumerationType, FloatType, FloatValue, IntegerType, IntegerValue, Model, ReferenceMember, ReferenceType, StringType, StringValue } from "../language/generated/ast.js";
+import { ArrayValue, AttributeMember, BooleanType, BooleanValue, Documentation, Entity, Enumeration, EnumerationLiteral, EnumerationLiteralValue, EnumerationType, FloatType, FloatValue, IntegerType, IntegerValue, Module, ReferenceMember, ReferenceType, StringType, StringValue } from "../language/generated/ast.js";
 
 export interface Visitor {
-  visitModel(node: Model): void;
+  visitModule(node: Module): void;
   visitEntity(node: Entity): void;
   visitEnumeration(node: Enumeration): void;
   visitEnumerationLiteral(node: EnumerationLiteral): void;

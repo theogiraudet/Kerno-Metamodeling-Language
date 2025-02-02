@@ -1,10 +1,11 @@
-import type { AstNode, LangiumDocument, LangiumServices } from 'langium';
 import chalk from 'chalk';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 import { URI } from 'langium';
+import { LangiumServices } from 'langium/lsp';
+import * as util from 'util'
 
-export async function extractDocument(fileName: string, services: LangiumServices): Promise<LangiumDocument> {
+export async function extractDocument(fileName: string, services: LangiumServices) {
     const extensions = services.LanguageMetaData.fileExtensions;
     if (!extensions.includes(path.extname(fileName))) {
         console.error(chalk.yellow(`Please choose a file with one of these extensions: ${extensions}.`));
@@ -16,26 +17,27 @@ export async function extractDocument(fileName: string, services: LangiumService
         process.exit(1);
     }
 
-    const document = services.shared.workspace.LangiumDocuments.getOrCreateDocument(URI.file(path.resolve(fileName)));
-    await services.shared.workspace.DocumentBuilder.build([document], { validation: true });
-
-    const validationErrors = (document.diagnostics ?? []).filter(e => e.severity === 1);
+    services.shared.workspace.LangiumDocuments.getOrCreateDocument(URI.file(path.resolve(fileName))).then(doc => { 
+        return services.shared.workspace.DocumentBuilder.build([doc], { validation: true }).then(_ => doc);
+    }).then(doc => {
+    const validationErrors = (doc.diagnostics ?? []).filter(e => e.severity === 1);
     if (validationErrors.length > 0) {
         console.error(chalk.red('There are validation errors:'));
         for (const validationError of validationErrors) {
             console.error(chalk.red(
-                `line ${validationError.range.start.line + 1}: ${validationError.message} [${document.textDocument.getText(validationError.range)}]`
+                `line ${validationError.range.start.line + 1}: ${validationError.message} [${doc.textDocument.getText(validationError.range)}]`
             ));
         }
         process.exit(1);
     }
 
-    return document;
+    console.log(util.inspect(doc.parseResult.value));
+    });
 }
 
-export async function extractAstNode<T extends AstNode>(fileName: string, services: LangiumServices): Promise<T> {
-    return (await extractDocument(fileName, services)).parseResult?.value as T;
-}
+// export async function extractAstNode<T extends AstNode>(fileName: string, services: LangiumServices): Promise<T> {
+//     return (await extractDocument(fileName, services)).parseResult?.value as T;
+// }
 
 interface FilePathData {
     destination: string,

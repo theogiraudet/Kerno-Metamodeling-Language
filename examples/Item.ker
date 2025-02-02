@@ -1,0 +1,32 @@
+module item.abstract
+
+import { Block } from Block
+import { ComponentType, Component } from item.abstract.component
+
+entity Item(item) {
+    doc /** This is an item */
+    prop id: string
+    prop foo: boolean[0..3] = [true, false, true]
+    prop bar: ComponentType = Item
+    contains components: Component[0..]
+    contains blocks: Block[0..]
+    contains test: Test2
+}
+
+entity Test(test) {
+    contains item: Item
+}
+
+entity Test2(test2) {
+    prop foo: string
+}
+
+item Foo {
+	prop id = "0"
+	prop foo = [true, false, true]
+	prop bar = Item
+	contains test = Component {
+        prop foo: string
+    }
+
+}

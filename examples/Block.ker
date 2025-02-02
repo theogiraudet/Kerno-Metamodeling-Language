@@ -1,0 +1,18 @@
+module Block
+
+import { Item } from item.abstract
+
+doc /** 
+This entity represents a **block**.
+ */
+entity Block(block) {
+    prop hardness: integer
+    prop gravity: integer
+    contains drop: Component
+}
+
+item foo {
+    prop id = "0"
+    prop foo = [true, false, false]
+	prop bar = Block
+}

@@ -1,5 +1,6 @@
-import { AstNode, AstNodeDescription, DefaultScopeComputation, LangiumDocument, LangiumServices, MultiMap, PrecomputedScopes, streamAllContents } from "langium";
-import { Model, isClassifier } from "../generated/ast.js";
+import {  AstNodeDescription, AstUtils, DefaultScopeComputation, LangiumDocument } from "langium";
+import { LangiumServices } from "langium/lsp";
+import { isClassifier, isModule } from "../generated/ast.js";
 
 export class KernoScopeComputation extends DefaultScopeComputation {
     
@@ -9,32 +10,11 @@ export class KernoScopeComputation extends DefaultScopeComputation {
 
     override async computeExports(document: LangiumDocument): Promise<AstNodeDescription[]> {
         const exportedDescriptions: AstNodeDescription[] = [];
-        for (const childNode of streamAllContents(document.parseResult.value)) {
-            if (isClassifier(childNode)) {
-                const fullyQualifiedName = `${childNode.$container.module}.${childNode.name}`;
-                exportedDescriptions.push(this.descriptions.createDescription(childNode, fullyQualifiedName, document));
+        for (const childNode of AstUtils.streamAst(document.parseResult.value)) {
+            if ((isClassifier(childNode) || isModule(childNode)) && childNode.name) {
+                exportedDescriptions.push(this.descriptions.createDescription(childNode, childNode.name, document));
             }
         }
         return exportedDescriptions;
     }
-
-    override async computeLocalScopes(document: LangiumDocument): Promise<PrecomputedScopes> {
-        const model = document.parseResult.value as Model;
-        const scopes = new MultiMap<AstNode, AstNodeDescription>();
-        this.processContainer(model, scopes, document);
-        return scopes;
-    }
-
-    private processContainer(container: Model, scopes: PrecomputedScopes, document: LangiumDocument): AstNodeDescription[] {
-        const localDescriptions: AstNodeDescription[] = [];
-        for (const element of container.namespaces) {
-            if (isClassifier(element)) {
-                const description = this.descriptions.createDescription(element, element.name, document);
-                localDescriptions.push(description);
-            }
-        }
-        scopes.addAll(container, localDescriptions);
-        return localDescriptions;
-    }
-
 }

@@ -1,0 +1,1 @@
+curl -L -o crossecore-generator.jar https://github.com/crossecore/crossecore-generator/releases/download/v0.1.5/crossecore-generator.jar   
