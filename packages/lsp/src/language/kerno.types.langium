@@ -143,6 +143,6 @@ interface ReferenceValue {
 }
 
 interface ContainsValue {
-    memberRef: @Entity
+    // memberRef: @Entity
     values: InstanceMember[]
 }

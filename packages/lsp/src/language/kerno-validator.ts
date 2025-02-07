@@ -1,5 +1,5 @@
-import { AstUtils, type AstNode, type DiagnosticData, type ValidationAcceptor, type ValidationChecks } from 'langium';
-import { type KernoAstType, isEnumerationLiteralValue, ArrayValue, Entity, Enumeration, Module, Member, AttributeMember, isAttributeType, isInstanceAttributeMember, Instance, isBooleanType, isEnumerationType, PrimitiveValue, ComplexValue, ContainsValue, ReferenceValue, isMember, isInstanceMember, Value, InstanceAttributeMember } from './generated/ast.js';
+import { type AstNode, type DiagnosticData, type ValidationAcceptor } from 'langium';
+import { isEnumerationLiteralValue, ArrayValue, Entity, Enumeration, Module, Member, AttributeMember, isAttributeType, isInstanceAttributeMember, Instance, isBooleanType, isEnumerationType, Value } from './generated/ast.js';
 import type { KernoServices } from './kerno-module.js';
 import { checkArrayValueTypes, checkValueType } from './kerno-type-system.js';
 
@@ -16,18 +16,18 @@ export interface MissingMembersErrorData extends DiagnosticData {
  * Register custom validation checks.
  */
 export function registerValidationChecks(services: KernoServices) {
-    const registry = services.validation.ValidationRegistry;
-    const validator = services.validation.KernoValidator;
-    const checks: ValidationChecks<KernoAstType> = {
-        Member: validator.checkCardinality,
-        AttributeMember: validator.checkAttributeTypeValue,
-        ArrayValue: validator.checkArrayProperties,
-        Entity: validator.checkPropertyNameUniqueness,
-        Module: validator.checkEntityNameUniqueness,
-        Enumeration: validator.checkLiteralNameUniqueness,
-        Instance: validator.checkInstanceMembers
-    };
-    registry.register(checks, validator);
+    // const registry = services.validation.ValidationRegistry;
+    // const validator = services.validation.KernoValidator;
+    // const checks: ValidationChecks<KernoAstType> = {
+    //     Member: validator.checkCardinality,
+    //     AttributeMember: validator.checkAttributeTypeValue,
+    //     ArrayValue: validator.checkArrayProperties,
+    //     Entity: validator.checkPropertyNameUniqueness,
+    //     Module: validator.checkEntityNameUniqueness,
+    //     Enumeration: validator.checkLiteralNameUniqueness,
+    //     Instance: validator.checkInstanceMembers
+    // };
+    // registry.register(checks, validator);
 }
 
 /**
@@ -94,12 +94,12 @@ export class KernoValidator {
         }
     }
 
-    checkInstanceValue(member: InstanceAttributeMember, accept: ValidationAcceptor): void {
-        const instanceMember = AstUtils.getContainerOfType(value, isInstanceMember)
-        if(member.value) {
-            this.checkType(member.value, member, accept)
-        }
-    }
+    // checkInstanceValue(member: InstanceAttributeMember, accept: ValidationAcceptor): void {
+    //     const instanceMember = AstUtils.getContainerOfType(value, isInstanceMember)
+    //     if(member.value) {
+    //         this.checkType(member.value, member, accept)
+    //     }
+    // }
 
     checkType(value: Value, member: Member, accept: ValidationAcceptor): void {
         const type = member.memberType;
@@ -195,16 +195,16 @@ export class KernoValidator {
     }
 
 
-    private getPropertyDefinition(value: Value): Member {
-        const container = AstUtils.getContainerOfType(value, isMember)
-        if(container) {
-            return container
-        }
-        const instanceMember = AstUtils.getContainerOfType(value, isInstanceMember)
-        if(instanceMember) {
-            return instanceMember.memberRef.ref!
-        }
-        throw new Error("Value is not a property definition")
-    }
+    // private getPropertyDefinition(value: Value): Member {
+    //     const container = AstUtils.getContainerOfType(value, isMember)
+    //     if(container) {
+    //         return container
+    //     }
+    //     const instanceMember = AstUtils.getContainerOfType(value, isInstanceMember)
+    //     if(instanceMember) {
+    //         return instanceMember.memberRef.ref!
+    //     }
+    //     throw new Error("Value is not a property definition")
+    // }
 
 }

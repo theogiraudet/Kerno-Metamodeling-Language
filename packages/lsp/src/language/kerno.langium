@@ -48,7 +48,7 @@ InstanceReferenceMember returns InstanceReferenceMember:
     documentation=Documentation? 'refers' memberRef=[ReferenceMember:ID] '=' value=(ReferenceValue)?;
 
 ContainsValue returns ContainsValue:
-    memberRef=[Entity:ID] '{' values+=InstanceMember* '}';
+    '{' values+=InstanceMember* '}';
 
 ReferenceValue returns ReferenceValue:
     value=[Instance:ID];

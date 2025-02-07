@@ -1,7 +1,6 @@
-import type { Module } from 'langium';
-import { inject } from 'langium';
+import type { LangiumSharedCoreServices } from 'langium';
+import { inject, Module } from 'langium';
 import { KernoGeneratedModule, KernoGeneratedSharedModule } from './generated/module.js';
-import { KernoValidator, registerValidationChecks } from './kerno-validator.js';
 import { KernoSemanticTokenization } from './lsp/kerno-semantic-tokenization.js';
 import { KernoScopeProvider } from './lsp/kerno-scope-provider.js';
 import { KernoCompletionProvider } from './lsp/kerno-completion-provider.js';
@@ -9,13 +8,16 @@ import { KernoScopeComputation } from './lsp/kerno-scope-computation.js';
 import { createDefaultModule, createDefaultSharedModule, DefaultSharedModuleContext, LangiumServices, LangiumSharedServices, PartialLangiumServices } from 'langium/lsp';
 import { KernoDocumentationProvider } from './lsp/kerno-documentation-provider.js';
 import { KernoCodeActionProvider } from './lsp/kerno-code-action-provider.js';
+import { createLangiumModuleForTypirBinding, initializeLangiumTypirServices, LangiumServicesForTypirBinding } from 'typir-langium';
+import { createKernoTypirModule } from './kerno-typir.js';
 
 /**
  * Declaration of custom services - add your own service classes here.
  */
 export type KernoAddedServices = {
+    typir: LangiumServicesForTypirBinding,
     validation: {
-        KernoValidator: KernoValidator,
+        // KernoValidator: KernoValidator,
         // KernoAcceptWeaver: KernoAcceptWeaver
     }
 }
@@ -31,24 +33,30 @@ export type KernoServices = LangiumServices & KernoAddedServices
  * declared custom services. The Langium defaults can be partially specified to override only
  * selected services, while the custom services must be fully specified.
  */
-export const KernoModule: Module<KernoServices, PartialLangiumServices & KernoAddedServices> = {
-    lsp: {
-        SemanticTokenProvider: (services) => new KernoSemanticTokenization(services),
-        CompletionProvider: (services) => new KernoCompletionProvider(services),
-        CodeActionProvider: (services) => new KernoCodeActionProvider(services)
-    },
-    references: {
-        ScopeProvider: (services) => new KernoScopeProvider(services),
-        ScopeComputation: (services) => new KernoScopeComputation(services)
-    },
-    validation: {
-        KernoValidator: () => new KernoValidator(),
-        // KernoAcceptWeaver: () => new KernoAcceptWeaver()
-    },
-    documentation: {
-        DocumentationProvider: (services) => new KernoDocumentationProvider(services)
-    }
-};
+export function createKernoModule(shared: LangiumSharedCoreServices): Module<KernoServices, PartialLangiumServices & KernoAddedServices> {
+    return {
+        typir: () => inject(Module.merge(
+            createLangiumModuleForTypirBinding(shared), // the Typir default services
+            createKernoTypirModule(shared), // custom Typir services for Kerno
+        )),
+        lsp: {
+            SemanticTokenProvider: (services) => new KernoSemanticTokenization(services),
+            CompletionProvider: (services) => new KernoCompletionProvider(services),
+            CodeActionProvider: (services) => new KernoCodeActionProvider(services)
+        },
+        references: {
+            ScopeProvider: (services) => new KernoScopeProvider(services),
+            ScopeComputation: (services) => new KernoScopeComputation(services)
+        },
+        validation: {
+            // KernoValidator: () => new KernoValidator(),
+            // KernoAcceptWeaver: () => new KernoAcceptWeaver()
+        },
+        documentation: {
+            DocumentationProvider: (services) => new KernoDocumentationProvider(services)
+        }
+    };
+}
 
 /**
  * Create the full set of services required by Langium.
@@ -76,10 +84,11 @@ export function KernoServices(context: DefaultSharedModuleContext): {
     const Kerno = inject(
         createDefaultModule({ shared }),
         KernoGeneratedModule,
-        KernoModule
+        createKernoModule(shared)
     );
     shared.ServiceRegistry.register(Kerno);
-    registerValidationChecks(Kerno);
+    // registerValidationChecks(Kerno);
     // weaveAcceptMethods(Kerno);
+    initializeLangiumTypirServices(Kerno, Kerno.typir);
     return { shared, Kerno: Kerno };
 }

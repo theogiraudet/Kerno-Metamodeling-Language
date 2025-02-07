@@ -1,12 +1,12 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
+    "target": "ES2022",
     "module": "Node16",
-    "lib": ["ESNext"],
+    "lib": ["ESNext", "ES2020.BigInt"],
     "sourceMap": true,
     "outDir": "out",
     "strict": true,
-    "noUnusedLocals": true,
+    "noUnusedLocals": false,
     "noImplicitReturns": true,
     "noImplicitOverride": true,
     "moduleResolution": "Node16",

@@ -10,3 +10,8 @@ enumeration ComponentType {
     Item,
     Block
 }
+
+enumeration Foo {
+    Foo,
+    Bar
+}
